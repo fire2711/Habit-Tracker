@@ -1,4 +1,3 @@
-#!/usr/local/bin/php
 <?php
 $config = parse_ini_file("../../../db_config.ini");
 
