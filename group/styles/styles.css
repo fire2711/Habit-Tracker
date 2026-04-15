@@ -804,3 +804,139 @@ textarea.form-control {
         width: 100%;
     }
 }
+
+.history-stat-card {
+    padding: 22px;
+    height: 100%;
+}
+
+.history-stat-label {
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #7c4dff;
+    margin-bottom: 10px;
+}
+
+.history-stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.history-stat-sub {
+    margin-top: 8px;
+    color: #64748b;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.history-filter-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.history-filter-chip {
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-weight: 800;
+    border: 1px solid rgba(167, 139, 250, 0.24);
+    background: rgba(167, 139, 250, 0.12);
+    color: #6d28d9;
+    transition: all 0.2s ease;
+}
+
+.history-filter-chip:hover {
+    background: rgba(167, 139, 250, 0.22);
+    color: #581c87;
+}
+
+.history-filter-chip.active {
+    background: linear-gradient(90deg, #f472b6, #a78bfa);
+    color: #fff;
+    border-color: transparent;
+}
+
+.history-date-block+.history-date-block {
+    margin-top: 22px;
+}
+
+.history-date-title {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #6d28d9;
+    margin-bottom: 14px;
+}
+
+.history-item+.history-item {
+    margin-top: 14px;
+}
+
+.history-right-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.history-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 0.84rem;
+    white-space: nowrap;
+}
+
+.history-pill-complete {
+    background: linear-gradient(180deg, #86efac, #4ade80);
+    color: #14532d;
+    box-shadow: 0 6px 14px rgba(74, 222, 128, 0.2);
+}
+
+.history-pill-missed {
+    background: linear-gradient(180deg, #fda4af, #fb7185);
+    color: #881337;
+    box-shadow: 0 6px 14px rgba(251, 113, 133, 0.2);
+}
+
+.history-pill-multiplier {
+    background: rgba(96, 165, 250, 0.14);
+    color: #2563eb;
+    border: 1px solid rgba(96, 165, 250, 0.32);
+}
+
+.history-meta-row {
+    margin-top: 14px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    color: #64748b;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.history-empty {
+    text-align: center;
+    padding: 44px 20px;
+}
+
+.history-empty h5 {
+    font-weight: 900;
+    color: #7c3aed;
+    margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+    .history-right-meta {
+        justify-content: flex-start;
+    }
+}

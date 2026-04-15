@@ -80,6 +80,8 @@ if ($habit_id <= 0) {
 $today = date("Y-m-d");
 
 try {
+    $conn->begin_transaction();
+
     $habitStmt = $conn->prepare("
         SELECT habit_id, weight, last_completed_date, is_active
         FROM habits
@@ -97,37 +99,32 @@ try {
 
     if ($habitResult->num_rows !== 1) {
         $habitStmt->close();
-        sendJson([
-            "success" => false,
-            "message" => "Habit not found."
-        ]);
+        throw new Exception("Habit not found.");
     }
 
     $habit = $habitResult->fetch_assoc();
     $habitStmt->close();
 
     if ((int)$habit["is_active"] !== 1) {
-        sendJson([
-            "success" => false,
-            "message" => "Habit is inactive."
-        ]);
+        throw new Exception("Habit is inactive.");
     }
-
-    $userStmt = $conn->prepare("SELECT xp FROM users WHERE user_id = ? LIMIT 1");
-    if (!$userStmt) {
-        throw new Exception("Failed to prepare user query.");
-    }
-
-    $userStmt->bind_param("i", $user_id);
-    $userStmt->execute();
-    $userResult = $userStmt->get_result();
-    $userData = $userResult->fetch_assoc();
-    $userStmt->close();
-
-    $currentXp = (int)$userData["xp"];
 
     if ($habit["last_completed_date"] === $today) {
+        $userStmt = $conn->prepare("SELECT xp FROM users WHERE user_id = ? LIMIT 1");
+        if (!$userStmt) {
+            throw new Exception("Failed to prepare user query.");
+        }
+
+        $userStmt->bind_param("i", $user_id);
+        $userStmt->execute();
+        $userResult = $userStmt->get_result();
+        $userData = $userResult->fetch_assoc();
+        $userStmt->close();
+
+        $currentXp = (int)($userData["xp"] ?? 0);
         $levelData = calculateLevelData($currentXp);
+
+        $conn->rollback();
 
         sendJson([
             "success" => false,
@@ -142,11 +139,37 @@ try {
         ]);
     }
 
+    $userStmt = $conn->prepare("SELECT xp FROM users WHERE user_id = ? LIMIT 1");
+    if (!$userStmt) {
+        throw new Exception("Failed to prepare user query.");
+    }
+
+    $userStmt->bind_param("i", $user_id);
+    $userStmt->execute();
+    $userResult = $userStmt->get_result();
+    $userData = $userResult->fetch_assoc();
+    $userStmt->close();
+
+    $currentXp = (int)($userData["xp"] ?? 0);
+
     $rewardXp = xpReward((int)$habit["weight"]);
     $newXp = $currentXp + $rewardXp;
 
     $levelData = calculateLevelData($newXp);
     $newLevel = (int)$levelData["level"];
+
+    $busynessMultiplier = 1.00;
+
+    if (file_exists(__DIR__ . "/calendar_busyness.php")) {
+        require_once __DIR__ . "/calendar_busyness.php";
+
+        if (function_exists("getTodayBusyness")) {
+            $todayBusyness = getTodayBusyness($conn, $user_id);
+            if ($todayBusyness && isset($todayBusyness["multiplier"])) {
+                $busynessMultiplier = (float)$todayBusyness["multiplier"];
+            }
+        }
+    }
 
     $updateUserStmt = $conn->prepare("
         UPDATE users
@@ -174,6 +197,20 @@ try {
     $updateHabitStmt->execute();
     $updateHabitStmt->close();
 
+    $logStmt = $conn->prepare("
+        INSERT INTO habit_logs (habit_id, log_date, completed, xp_earned, busyness_multiplier)
+        VALUES (?, ?, 1, ?, ?)
+    ");
+    if (!$logStmt) {
+        throw new Exception("Failed to prepare habit log insert.");
+    }
+
+    $logStmt->bind_param("isid", $habit_id, $today, $rewardXp, $busynessMultiplier);
+    $logStmt->execute();
+    $logStmt->close();
+
+    $conn->commit();
+
     $_SESSION["xp"] = $newXp;
     $_SESSION["level"] = $newLevel;
 
@@ -185,13 +222,22 @@ try {
         "level" => $newLevel,
         "xp_into_level" => $levelData["xp_into_level"],
         "xp_needed" => $levelData["xp_needed"],
-        "progress_percent" => $levelData["progress_percent"]
+        "progress_percent" => $levelData["progress_percent"],
+        "busyness_multiplier" => $busynessMultiplier
     ]);
 
 } catch (Throwable $e) {
+    if ($conn && $conn->errno === 0) {
+        try {
+            $conn->rollback();
+        } catch (Throwable $ignored) {
+        }
+    }
+
     sendJson([
         "success" => false,
         "message" => "Server error.",
         "debug" => $e->getMessage()
     ]);
 }
+?>

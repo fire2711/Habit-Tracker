@@ -5,7 +5,7 @@ function googleClientId() {
 }
 
 function googleClientSecret() {
-    return "";
+    return "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";
 }
 
 function googleRedirectUri() {
