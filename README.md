@@ -2,6 +2,10 @@
 
 A PHP and MySQL habit tracking web app where users can create habits, mark them complete once per day, earn XP, level up, and review their progress history. The project also includes an optional Google Calendar integration that reads calendar busyness and stores a daily multiplier value.
 
+# Link to Website
+
+https://cise.ufl.edu/~kaleb.zhai/cis4930/group/
+
 ## Overview
 
 This project was built as a gamified habit tracker. Instead of only checking habits off a list, users gain XP for completing habits and progress through levels over time.
